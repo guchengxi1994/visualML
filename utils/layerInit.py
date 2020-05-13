@@ -5,15 +5,16 @@
 @Author: xiaoshuyui
 @Date: 2020-05-11 17:19:38
 @LastEditors: xiaoshuyui
-@LastEditTime: 2020-05-12 08:30:46
+@LastEditTime: 2020-05-13 10:46:05
 '''
 
 layers = {
+    'Input':"",
     'Dense':"",
     'Dropout':"",
     'Flatten':"",
     'Conv2D':"",
-    'MaxPooling2D':""
+    'MaxPooling2D':"", 
 }
 
 all_layers_core = ['Dense','Activation','Dropout','Flatten', \
@@ -30,3 +31,5 @@ all_layers_pool = ['MaxPooling1D','MaxPooling2D','MaxPooling3D','AveragePooling1
     'GlobalMaxPooling3D', 'GlobalAveragePooling2D','GlobalAveragePooling1D','GlobalAveragePooling3D']
 
 all_activations = ['LeakyReLU','PReLU','ELU','ThresholdedReLU','Softmax','ReLU']
+
+others = ['Input','Layer','InputLayer']

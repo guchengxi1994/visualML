@@ -5,7 +5,7 @@
 @Author: xiaoshuyui
 @Date: 2020-05-11 08:49:06
 @LastEditors: xiaoshuyui
-@LastEditTime: 2020-05-12 09:42:27
+@LastEditTime: 2020-05-13 11:36:21
 '''
 from PyQt5.QtWidgets import QApplication,QWidget, \
     QTextEdit,QVBoxLayout,QPushButton,QMainWindow
@@ -37,6 +37,7 @@ class MainWindow(QMainWindow):
         self.addLayer = QPushButton(self)
         self.addLayer.setText("Layer")
         self.addLayer.move(100,100)
+        self.addLayer.clicked.connect(self._addLayer)
 
         
 
@@ -60,11 +61,30 @@ class MainWindow(QMainWindow):
     def _testCode(self):
         if len(self.codeReview.toPlainText()) == 0:
             self.codeReview.insertPlainText("from keras.models import Sequential" +"\n")
+        
+        # s = self.codeReview.toPlainText()
+        # print(s.split("\n"))
 
     
     def _addLayer(self):
+        s = self.codeReview.toPlainText().strip("\n")
         dia = LayerDialog()
         result = dia.exec_()
+        print(dia.layer.text())
+        codes = []
+        if len(s)>0:
+            pass
+        else:
+            codes.append("from keras.models import Sequential" +"\n")
+        thisLayer = "from keras.layers import "+dia.layer.text() +"\n"
+        if thisLayer in s:
+            pass
+        else:
+            codes.append(thisLayer)
+
+
+
+        
         
         
 
