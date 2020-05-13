@@ -5,7 +5,7 @@
 @Author: xiaoshuyui
 @Date: 2020-05-11 08:49:06
 @LastEditors: xiaoshuyui
-@LastEditTime: 2020-05-13 11:36:21
+@LastEditTime: 2020-05-13 17:09:23
 '''
 from PyQt5.QtWidgets import QApplication,QWidget, \
     QTextEdit,QVBoxLayout,QPushButton,QMainWindow
@@ -14,6 +14,7 @@ from PyQt5.QtGui import QTextCursor
 
 import sys
 from utils.LayerDialog import LayerDialog
+import copy
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -39,6 +40,13 @@ class MainWindow(QMainWindow):
         self.addLayer.move(100,100)
         self.addLayer.clicked.connect(self._addLayer)
 
+
+        self.addLayer = QPushButton(self)
+        self.addLayer.setText("Optimizers")
+        self.addLayer.move(100,150)
+        # self.addLayer.clicked.connect(self._addLayer)
+        
+
         
 
         self.reverse = QPushButton(self)
@@ -46,6 +54,10 @@ class MainWindow(QMainWindow):
         self.reverse.move(100,415)
         self.reverse.setToolTip("Delete Last Row")
         self.reverse.clicked.connect(self._undo)
+
+        self.lastCodes = []
+        
+        self.isFirstLayer = True
 
 
     def _undo(self):
@@ -55,7 +67,15 @@ class MainWindow(QMainWindow):
         cursor.deleteChar()#删除光标右边的文本 相当于delete
         cursor.deletePreviousChar()#删除光标左边的文本，相当于Backspace  
         self.codeReview.setFocus()
-        # self.codeReview.setTextCurosr(cursor)
+
+        # s = self.codeReview.toPlainText().split("\n")
+        # print(self.lastCodes)
+
+        # codes = list(set(s).difference(set(self.lastCodes)))
+
+        # for i in codes:
+        #     self.codeReview.insertPlainText(i)
+
 
     
     def _testCode(self):
@@ -67,20 +87,60 @@ class MainWindow(QMainWindow):
 
     
     def _addLayer(self):
-        s = self.codeReview.toPlainText().strip("\n")
+        s = self.codeReview.toPlainText().split("\n")
         dia = LayerDialog()
+        dia.setWindowTitle("Layers")
         result = dia.exec_()
         print(dia.layer.text())
         codes = []
-        if len(s)>0:
+        if len(s)>0 and s!=['']:
             pass
         else:
             codes.append("from keras.models import Sequential" +"\n")
+            codes.append("\n\n")
+            codes.append("model = Sequential()"+"\n")
         thisLayer = "from keras.layers import "+dia.layer.text() +"\n"
         if thisLayer in s:
             pass
         else:
-            codes.append(thisLayer)
+            # codes.append(thisLayer)
+            codes.insert(0,thisLayer)
+            
+            if dia.layer.text() == "Dropout":
+                thisLine = "model.add(Dropout({}))".format(dia.dropOutRate)
+
+                codes.append(thisLine+"\n")
+
+            if dia.layer.text() == "Input":
+                pass
+
+            if dia.layer.text() == "Dense" and self.isFirstLayer:
+                # if self.isFirstLayer:
+                self.isFirstLayer = False
+                kernels = dia.kernel_numbers.text()
+                input_dim = dia.numbers.text()
+                act = dia.layer_acti.text()
+                thisLine = "model.add(Dense({},activation={},input_dim={}))".format(kernels,act.lower(),input_dim)
+                codes.append(thisLine + "\n")
+
+            elif dia.layer.text() == "Dense" and not self.isFirstLayer:
+                # if self.isFirstLayer:
+                # self.isFirstLayer = False
+                kernels = dia.kernel_numbers.text()
+                # input_dim = dia.numbers.text()
+                act = dia.layer_acti.text()
+                thisLine = "model.add(Dense({},activation={}))".format(kernels,act.lower())
+                codes.append(thisLine + "\n")
+
+        self.lastCodes = copy.deepcopy(codes)
+        for i in codes:
+            self.codeReview.insertPlainText(i)
+        
+        # for i in self.lastCodes:
+        #     i.replace("\n","")
+
+
+
 
 
 

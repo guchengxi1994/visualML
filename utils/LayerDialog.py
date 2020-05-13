@@ -5,7 +5,7 @@
 @Author: xiaoshuyui
 @Date: 2020-05-11 16:20:32
 @LastEditors: xiaoshuyui
-@LastEditTime: 2020-05-13 11:26:02
+@LastEditTime: 2020-05-13 16:57:06
 '''
 
 from PyQt5.QtWidgets import QApplication,QWidget, \
@@ -20,6 +20,7 @@ from . import layerInit as li
 class ALLLayer(QDialog):
     def __init__(self, parent=None, flags=None):
         super(ALLLayer,self).__init__()
+        # self.setWindowTitle(self,"All layers")
         self.core = QComboBox(self)
         self.conv = QComboBox(self)
         self.pool = QComboBox(self)
@@ -115,17 +116,21 @@ class ALLLayer(QDialog):
 
 
 def is_int(i):
-    try:
-        num = int(i)
+    if len(i) == 0:
         return True
-    except ValueError:
-        return False
+    else:
+        try:
+            num = int(i)
+            return True
+        except ValueError:
+            return False
 
 
 
 class LayerDialog(QDialog):
     def __init__(self, parent=None, flags=None):
         super(LayerDialog,self).__init__()
+        # self.setWindowTitle(self,"Layers")
         self.setFixedSize(400,200)
         
         self.layer = QLineEdit(self)
@@ -167,15 +172,21 @@ class LayerDialog(QDialog):
         self.activation.currentIndexChanged.connect(self._changeLayer)
 
         self.submit = QPushButton(self)
-        self.submit.move(150,150)
+        self.submit.move(150,165)
         self.submit.setText("Submit")
         self.submit.clicked.connect(self._submit)
 
         self.numbers = QLineEdit(self)
-        self.numbers.setPlaceholderText("Kernel numbers or Input Size")
+        self.numbers.setPlaceholderText("Input Size or kernel size")
         self.numbers.move(50,100)
 
         self.numbers.setStyleSheet("background-color: white;")
+
+
+        self.kernel_numbers = QLineEdit(self)
+        self.kernel_numbers.setPlaceholderText("Kernel numbers")
+        self.kernel_numbers.move(50,135)
+        self.kernel_numbers.setStyleSheet("background-color: white;")
 
         self.TrueFlag = False
 
@@ -189,10 +200,12 @@ class LayerDialog(QDialog):
 
     def _getMore(self):
         dia = ALLLayer()
+        dia.setWindowTitle("All layers")
         result = dia.exec_()
         self.layer.setText(dia.info)
     
     def _submit(self):
+        
         if self.layer.text() == "Input":
             self.layer_acti.setText("")
             # print(self.numbers.text())
@@ -235,14 +248,16 @@ class LayerDialog(QDialog):
                 if d == float(1):
                     d = 0.5
                 self.dropOutRate = d
+                self.close()
                 # print(d)
 
         else:
-            if is_int(self.numbers.text()):
+            if is_int(self.numbers.text()) and(is_int(self.kernel_numbers.text())):
                 self.TrueFlag = True
                 self.close()
             else:
                 self.numbers.setStyleSheet("background-color: green;")
+                self.kernel_numbers.setStyleSheet("background-color: green;")
                 QMessageBox.information(self,"警告","输入有问题！")
 
 
