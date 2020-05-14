@@ -1,0 +1,280 @@
+{
+  "node": [
+    {
+      "name": "dense_1_input",
+      "op": "DataInput",
+      "attr": {
+        "shape": {
+          "shape": {
+            "dim": [
+              {
+                "size": "-1"
+              },
+              {
+                "size": "20"
+              }
+            ]
+          }
+        },
+        "dtype": {
+          "type": "DT_FLOAT32"
+        },
+        "_output_shapes": {
+          "list": {
+            "shape": [
+              {
+                "dim": [
+                  {
+                    "size": "-1"
+                  },
+                  {
+                    "size": "20"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "dense_1",
+      "op": "FullyConnected",
+      "input": [
+        "dense_1_input"
+      ],
+      "attr": {
+        "units": {
+          "i": "64"
+        },
+        "dtype": {
+          "type": "DT_FLOAT32"
+        },
+        "use_bias": {
+          "b": true
+        },
+        "_output_shapes": {
+          "list": {
+            "shape": [
+              {
+                "dim": [
+                  {
+                    "size": "-1"
+                  },
+                  {
+                    "size": "64"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "dense_1_activation",
+      "op": "Relu",
+      "input": [
+        "dense_1"
+      ],
+      "attr": {
+        "_output_shapes": {
+          "list": {
+            "shape": [
+              {
+                "dim": [
+                  {
+                    "size": "-1"
+                  },
+                  {
+                    "size": "64"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "dropout_1",
+      "op": "Dropout",
+      "input": [
+        "dense_1_activation"
+      ],
+      "attr": {
+        "dtype": {
+          "type": "DT_FLOAT32"
+        },
+        "keep_prob": {
+          "f": 0.5
+        },
+        "_output_shapes": {
+          "list": {
+            "shape": [
+              {
+                "dim": [
+                  {
+                    "size": "-1"
+                  },
+                  {
+                    "size": "64"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "dense_2",
+      "op": "FullyConnected",
+      "input": [
+        "dropout_1"
+      ],
+      "attr": {
+        "units": {
+          "i": "64"
+        },
+        "dtype": {
+          "type": "DT_FLOAT32"
+        },
+        "use_bias": {
+          "b": true
+        },
+        "_output_shapes": {
+          "list": {
+            "shape": [
+              {
+                "dim": [
+                  {
+                    "size": "-1"
+                  },
+                  {
+                    "size": "64"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "dense_2_activation",
+      "op": "Relu",
+      "input": [
+        "dense_2"
+      ],
+      "attr": {
+        "_output_shapes": {
+          "list": {
+            "shape": [
+              {
+                "dim": [
+                  {
+                    "size": "-1"
+                  },
+                  {
+                    "size": "64"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "dropout_2",
+      "op": "Dropout",
+      "input": [
+        "dense_2_activation"
+      ],
+      "attr": {
+        "dtype": {
+          "type": "DT_FLOAT32"
+        },
+        "keep_prob": {
+          "f": 0.5
+        },
+        "_output_shapes": {
+          "list": {
+            "shape": [
+              {
+                "dim": [
+                  {
+                    "size": "-1"
+                  },
+                  {
+                    "size": "64"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "dense_3",
+      "op": "FullyConnected",
+      "input": [
+        "dropout_2"
+      ],
+      "attr": {
+        "units": {
+          "i": "10"
+        },
+        "dtype": {
+          "type": "DT_FLOAT32"
+        },
+        "use_bias": {
+          "b": true
+        },
+        "_output_shapes": {
+          "list": {
+            "shape": [
+              {
+                "dim": [
+                  {
+                    "size": "-1"
+                  },
+                  {
+                    "size": "10"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "name": "dense_3_activation",
+      "op": "Softmax",
+      "input": [
+        "dense_3"
+      ],
+      "attr": {
+        "_output_shapes": {
+          "list": {
+            "shape": [
+              {
+                "dim": [
+                  {
+                    "size": "-1"
+                  },
+                  {
+                    "size": "10"
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

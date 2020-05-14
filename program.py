@@ -5,20 +5,23 @@
 @Author: xiaoshuyui
 @Date: 2020-05-11 08:49:06
 @LastEditors: xiaoshuyui
-@LastEditTime: 2020-05-14 10:03:13
+@LastEditTime: 2020-05-14 14:49:53
 '''
 from PyQt5.QtWidgets import QApplication,QWidget, \
     QTextEdit,QVBoxLayout,QPushButton,QMainWindow, \
-    QMessageBox
+    QMessageBox,QDialog,QComboBox
      
 
 from PyQt5.QtGui import QTextCursor ,QTextDocument
+from PyQt5.QtCore import Qt
 
 
 import sys
 from utils.LayerDialog import LayerDialog
 from utils.OptimizerDialog import Ops
 import copy
+from utils.optimizerInit import ops,loss
+import numpy as np
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -49,6 +52,12 @@ class MainWindow(QMainWindow):
         self.addOps.setText("Optimizers")
         self.addOps.move(100,150)
         self.addOps.clicked.connect(self._ops)
+
+
+        self.addCompile = QPushButton(self)
+        self.addCompile.setText("Compile")
+        self.addCompile.move(100,200)
+        self.addCompile.clicked.connect(self._compile)
         
 
         
@@ -67,9 +76,43 @@ class MainWindow(QMainWindow):
 
         self.lossCal = ""
 
+        self.opzName = ""
+
         # self.test = QPushButton(self)
         # self.test.setText("test")
         # self.test.clicked.connect(self._insertDoc)
+
+    
+    def _compile(self):
+        if len(self.lossCal)>0:
+            thisCode = "model.compile(loss='{}',optimizer='{}',metrics=['accuracy'])".format(self.lossCal,self.opzName)
+
+        else:
+            
+            dia = QDialog()
+            btn = QPushButton('OK',dia)
+            com = QComboBox(dia)
+            com.addItems(ops)
+            com.move(50,50)
+
+            com2 = QComboBox(dia)
+            com2.addItems(loss)
+            com2.move(50,100)
+
+            btn.move(50,150)
+            btn.clicked.connect(dia.close)
+            dia.setWindowTitle("Dialog")
+            dia.setWindowModality(Qt.ApplicationModal)
+            dia.exec_()
+
+            thisCode = "model.compile(loss='{}',optimizer='{}',metrics=['accuracy'])"\
+                .format(com2.currentText(),com.currentText())
+
+        # print(thisCode)
+        self.codeReview.insertPlainText(thisCode+"\n")
+
+
+
 
 
     def _undo(self):
@@ -109,6 +152,7 @@ class MainWindow(QMainWindow):
         opti = op.opText.text()
         lr = op.learningRate
         decay = op.decayRate
+        self.opzName = opti.lower()
         importCode = "from keras.optimizers import {}".format(opti)
 
         thisLine = "{} = {}(lr={},decay={}, momentum=0.9, nesterov=True)".format(
@@ -141,6 +185,33 @@ class MainWindow(QMainWindow):
     def _testCode(self):
         if len(self.codeReview.toPlainText()) == 0:
             self.codeReview.insertPlainText("from keras.models import Sequential" +"\n")
+        
+        if isinstance(self.inputDim,type(Ellipsis)):
+            QMessageBox.information(self,"ERROR!","没有输入！")
+        else:
+            self._insertDoc("import numpy as np")
+            codes = []
+            if self.inputDim.startswith("("):
+                tmp1 = self.inputDim.replace("(","(100")
+                tmp2 = self.inputDim.replace("(","(20")
+                codes.append("x_train = np.random.random(({}))".format(tmp1))
+                codes.append("x_test = np.random.random(({}))".format(tmp2))
+                codes.append("y_train = keras.utils.to_categorical(np.random.randint(10, size=(100, 1)), num_classes=10)")
+                codes.append("y_test = keras.utils.to_categorical(np.random.randint(10, size=(20, 1)), num_classes=10)")
+
+            else:
+                codes.append("x_train = np.random.random((1000,{}))".format(self.inputDim))
+                codes.append("x_test = np.random.random((100,{}))".format(self.inputDim))
+                codes.append("y_train = np.random.randint(2, size=(1000, 1))")
+                codes.append("y_test = np.random.randint(2, size=(100, 1))")
+
+            codes.append("model.fit(x_train, y_train, batch_size=32, epochs=10)")
+            codes.append("score = model.evaluate(x_test, y_test, batch_size=64)")
+
+            for i in codes:
+                self.codeReview.insertPlainText(i+'\n')
+            
+
         
         # s = self.codeReview.toPlainText()
         # print(s.split("\n"))
@@ -183,7 +254,7 @@ class MainWindow(QMainWindow):
                 kernels = dia.kernel_numbers.text()
                 input_dim = dia.numbers.text()
                 act = dia.layer_acti.text()
-                thisLine = "model.add(Dense({},activation={},input_dim={}))".format(kernels,act.lower(),input_dim)
+                thisLine = "model.add(Dense({},activation='{}',input_dim={}))".format(kernels,act.lower(),input_dim)
                 self.inputDim = input_dim
                 codes.append(thisLine + "\n")
 
@@ -193,7 +264,7 @@ class MainWindow(QMainWindow):
                 kernels = dia.kernel_numbers.text()
                 # input_dim = dia.numbers.text()
                 act = dia.layer_acti.text()
-                thisLine = "model.add(Dense({},activation={}))".format(kernels,act.lower())
+                thisLine = "model.add(Dense({},activation='{}'))".format(kernels,act.lower())
                 codes.append(thisLine + "\n")
 
         self.lastCodes = copy.deepcopy(codes)
@@ -203,16 +274,6 @@ class MainWindow(QMainWindow):
         # for i in self.lastCodes:
         #     i.replace("\n","")
 
-
-
-
-
-
-        
-        
-        
-
-        
 
 
 
