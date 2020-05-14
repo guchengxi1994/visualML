@@ -5,7 +5,7 @@
 @Author: xiaoshuyui
 @Date: 2020-05-13 16:46:31
 @LastEditors: xiaoshuyui
-@LastEditTime: 2020-05-13 16:48:43
+@LastEditTime: 2020-05-14 08:23:46
 '''
 
 # sgd = SGD
@@ -26,4 +26,9 @@ ops = [
     'Adamax',
     'Nadam',
     'TFOptimizer', #???
+]
+
+loss = [
+    'categorical_crossentropy',
+    'binary_crossentropy',
 ]

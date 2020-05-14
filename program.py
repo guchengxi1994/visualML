@@ -5,15 +5,19 @@
 @Author: xiaoshuyui
 @Date: 2020-05-11 08:49:06
 @LastEditors: xiaoshuyui
-@LastEditTime: 2020-05-13 17:09:23
+@LastEditTime: 2020-05-14 10:03:13
 '''
 from PyQt5.QtWidgets import QApplication,QWidget, \
-    QTextEdit,QVBoxLayout,QPushButton,QMainWindow
+    QTextEdit,QVBoxLayout,QPushButton,QMainWindow, \
+    QMessageBox
+     
 
-from PyQt5.QtGui import QTextCursor
+from PyQt5.QtGui import QTextCursor ,QTextDocument
+
 
 import sys
 from utils.LayerDialog import LayerDialog
+from utils.OptimizerDialog import Ops
 import copy
 
 class MainWindow(QMainWindow):
@@ -41,10 +45,10 @@ class MainWindow(QMainWindow):
         self.addLayer.clicked.connect(self._addLayer)
 
 
-        self.addLayer = QPushButton(self)
-        self.addLayer.setText("Optimizers")
-        self.addLayer.move(100,150)
-        # self.addLayer.clicked.connect(self._addLayer)
+        self.addOps = QPushButton(self)
+        self.addOps.setText("Optimizers")
+        self.addOps.move(100,150)
+        self.addOps.clicked.connect(self._ops)
         
 
         
@@ -58,6 +62,14 @@ class MainWindow(QMainWindow):
         self.lastCodes = []
         
         self.isFirstLayer = True
+
+        self.inputDim = ...
+
+        self.lossCal = ""
+
+        # self.test = QPushButton(self)
+        # self.test.setText("test")
+        # self.test.clicked.connect(self._insertDoc)
 
 
     def _undo(self):
@@ -75,6 +87,54 @@ class MainWindow(QMainWindow):
 
         # for i in codes:
         #     self.codeReview.insertPlainText(i)
+
+    def _insertDoc(self,code:str):
+    # def _insertDoc(self):
+        # self.codeReview.insertPlainText("model = Sequential()"+'\n')
+        # code = "test"
+        doc = self.codeReview.document()
+        curosr = QTextCursor(doc)
+        searchText = "model = Sequential()"
+        tmp = doc.find(searchText,curosr)
+
+        if tmp is not None:
+            curosr.movePosition(QTextCursor.StartOfLine,QTextCursor.KeepAnchor,0)
+            curosr.insertText(code + '\n\n')
+        
+    
+    def _ops(self):
+        op = Ops()
+        op.setWindowTitle("Optimizer")
+        result = op.exec_()
+        opti = op.opText.text()
+        lr = op.learningRate
+        decay = op.decayRate
+        importCode = "from keras.optimizers import {}".format(opti)
+
+        thisLine = "{} = {}(lr={},decay={}, momentum=0.9, nesterov=True)".format(
+            opti.lower(),opti,str(lr),str(decay)
+        )
+        self.lossCal = op.lossText.text()
+        s = self.codeReview.toPlainText().split("\n")
+
+        if len(s) == 0 or  s==['']:
+            self.codeReview.insertPlainText("from keras.models import Sequential" +"\n")
+            self.codeReview.insertPlainText("\n\n")
+            self.codeReview.insertPlainText("model = Sequential()"+"\n")
+
+        if importCode not in s:
+            # self.codeReview.insertPlainText()
+            self._insertDoc(importCode)
+            # s.insert(0,importCode+"\n")
+        
+        self.codeReview.insertPlainText(thisLine + '\n')
+
+        
+        # s.append(thisLine+"\n")
+
+        
+
+
 
 
     
@@ -104,12 +164,15 @@ class MainWindow(QMainWindow):
             pass
         else:
             # codes.append(thisLayer)
-            codes.insert(0,thisLayer)
+            # codes.insert(0,thisLayer)
+            self._insertDoc(thisLayer)
             
-            if dia.layer.text() == "Dropout":
-                thisLine = "model.add(Dropout({}))".format(dia.dropOutRate)
-
-                codes.append(thisLine+"\n")
+            if dia.layer.text() == "Dropout" :
+                if not  self.isFirstLayer:
+                    thisLine = "model.add(Dropout({}))".format(dia.dropOutRate)
+                    codes.append(thisLine+"\n")
+                else:
+                    QMessageBox.information(self,"Error!","First Layer Must Have Input "+'\n'+" (size or dim),not Dropout!")
 
             if dia.layer.text() == "Input":
                 pass
@@ -121,6 +184,7 @@ class MainWindow(QMainWindow):
                 input_dim = dia.numbers.text()
                 act = dia.layer_acti.text()
                 thisLine = "model.add(Dense({},activation={},input_dim={}))".format(kernels,act.lower(),input_dim)
+                self.inputDim = input_dim
                 codes.append(thisLine + "\n")
 
             elif dia.layer.text() == "Dense" and not self.isFirstLayer:
