@@ -5,7 +5,7 @@
 @Author: xiaoshuyui
 @Date: 2020-05-11 17:19:38
 @LastEditors: xiaoshuyui
-@LastEditTime: 2020-05-13 10:46:05
+@LastEditTime: 2020-05-15 09:11:50
 '''
 
 layers = {
@@ -33,3 +33,8 @@ all_layers_pool = ['MaxPooling1D','MaxPooling2D','MaxPooling3D','AveragePooling1
 all_activations = ['LeakyReLU','PReLU','ELU','ThresholdedReLU','Softmax','ReLU']
 
 others = ['Input','Layer','InputLayer']
+
+padding = [
+    'same',
+    'valid',
+]

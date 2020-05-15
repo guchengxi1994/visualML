@@ -5,7 +5,7 @@
 @Author: xiaoshuyui
 @Date: 2020-05-11 16:20:32
 @LastEditors: xiaoshuyui
-@LastEditTime: 2020-05-13 16:57:06
+@LastEditTime: 2020-05-15 10:14:28
 '''
 
 from PyQt5.QtWidgets import QApplication,QWidget, \
@@ -153,7 +153,7 @@ class LayerDialog(QDialog):
 
 
         self.puz = QPushButton(self)
-        self.puz.move(200,95)
+        self.puz.move(350,95)
         self.puz.setFixedSize(31,31)
         self.puz.setStyleSheet("QPushButton{border-image: url(./static/imgs/puz.png)}")
         self.puz.setToolTip("Show Hint")
@@ -177,16 +177,31 @@ class LayerDialog(QDialog):
         self.submit.clicked.connect(self._submit)
 
         self.numbers = QLineEdit(self)
-        self.numbers.setPlaceholderText("Input Size or kernel size")
+        self.numbers.setPlaceholderText("Input Size ")
         self.numbers.move(50,100)
 
         self.numbers.setStyleSheet("background-color: white;")
+
+        self.kernel_size = QLineEdit(self)
+        self.kernel_size.setPlaceholderText("Kernel Size ")
+        self.kernel_size.move(200,100)
+
+        # self.numbers.setStyleSheet("background-color: white;")
 
 
         self.kernel_numbers = QLineEdit(self)
         self.kernel_numbers.setPlaceholderText("Kernel numbers")
         self.kernel_numbers.move(50,135)
         self.kernel_numbers.setStyleSheet("background-color: white;")
+
+        self.paddingType = QComboBox(self)
+        self.paddingType.move(200,135)
+        self.paddingType.addItems(li.padding)
+
+        self.strides = QLineEdit(self)
+        self.strides.move(280,135)
+        self.strides.setPlaceholderText('strides')
+        self.strides.setFixedWidth(50)
 
         self.TrueFlag = False
 
@@ -209,6 +224,8 @@ class LayerDialog(QDialog):
         if self.layer.text() == "Input":
             self.layer_acti.setText("")
             # print(self.numbers.text())
+            if self.layer_acti.text() == "LeakyReLU":
+                self.layer_acti.setText("Leaky")
 
             if is_int(self.numbers.text()):
                 self.TrueFlag = True
@@ -250,15 +267,45 @@ class LayerDialog(QDialog):
                 self.dropOutRate = d
                 self.close()
                 # print(d)
+        # elif self.layer.text().startswith("Conv"):
+        #     # pass
+        #     if is_int(self.kernel_size.text()):
+
 
         else:
-            if is_int(self.numbers.text()) and(is_int(self.kernel_numbers.text())):
-                self.TrueFlag = True
-                self.close()
+            if  not self.layer.text().startswith("Conv"):
+
+                if is_int(self.numbers.text()) and(is_int(self.kernel_numbers.text())):
+                    self.TrueFlag = True
+                    self.close()
+                else:
+                    self.numbers.setStyleSheet("background-color: green;")
+                    self.kernel_numbers.setStyleSheet("background-color: green;")
+                    QMessageBox.information(self,"警告","输入有问题！")
+            
             else:
-                self.numbers.setStyleSheet("background-color: green;")
-                self.kernel_numbers.setStyleSheet("background-color: green;")
-                QMessageBox.information(self,"警告","输入有问题！")
+                if is_int(self.strides.text()):
+                    pass
+                else:
+                    self.strides.setText("1")
+                
+                if is_int(self.kernel_size.text()):
+                    self.kernel_size.setText("({},{})".format(self.kernel_size.text(),self.kernel_size.text()))
+                elif self.kernel_size.text().startswith("(") and self.kernel_size.text().endswith(")"):
+                    tmp = self.kernel_size.text().replace("(","").replace(")","")
+                    tmps = tmp.split(",")
+                    if len(tmps) != 2:
+                        self.kernel_size.setStyleSheet("background-color: green;")
+                        QMessageBox.information(self,"警告","输入有问题！")
+                    else:
+                        a = tmps[0]
+                        b = tmps[1]
+                        if is_int(a) and is_int(b) and a == b:
+                            # pass
+                            self.close()
+                        else:
+                            self.kernel_size.setStyleSheet("background-color: green;")
+                            QMessageBox.information(self,"警告","输入有问题！")
 
 
 
